@@ -49,9 +49,7 @@ public:
      */
     ~block_queue() {
         m_locker.lock();
-        if (m_array != NULL) {
-            delete[] m_array;
-        }
+        delete[] m_array;
         m_locker.unlock();
     }
 

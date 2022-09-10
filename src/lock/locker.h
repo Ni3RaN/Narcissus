@@ -45,6 +45,7 @@ private:
 
 //信号量
 class sem {
+public:
     sem() {
         //构造函数没有返回值，可以通过抛出异常来报告错误
         if (sem_init(&m_sem, 0, 0) != 0) {

@@ -7,4 +7,10 @@ include_directories(include)
 
 aux_source_directory(src SRC_LIST)
 
-add_executable(Nereids ${SRC_LIST} src/timer/lst_timer.cpp src/timer/lst_timer.h src/http/http_conn.cpp src/http/http_conn.h src/log/log.cpp src/log/log.h src/lock/block_queue.h src/lock/locker.h)
+aux_source_directory(src/lock SRC_LIST)
+
+aux_source_directory(src/log SRC_LIST)
+
+aux_source_directory(src/timer SRC_LIST)
+
+add_executable(Nereids ${SRC_LIST})

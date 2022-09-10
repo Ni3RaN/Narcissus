@@ -23,7 +23,7 @@ public:
      * @param max_size
      */
     block_queue(int max_size = 1000) {
-        if(max_size <= 0) {
+        if (max_size <= 0) {
             exit(-1);
         }
         m_max_size = max_size;
@@ -49,7 +49,7 @@ public:
      */
     ~block_queue() {
         m_locker.lock();
-        if(m_array != NULL) {
+        if (m_array != NULL) {
             delete[] m_array;
         }
         m_locker.unlock();
@@ -61,7 +61,7 @@ public:
      */
     bool full() {
         m_locker.lock();
-        if(m_size >= m_max_size) {
+        if (m_size >= m_max_size) {
             m_locker.unlock();
             return true;
         }
@@ -75,7 +75,7 @@ public:
      */
     bool empty() {
         m_locker.lock();
-        if(m_size == 0) {
+        if (m_size == 0) {
             m_locker.unlock();
             return true;
         }
@@ -89,7 +89,7 @@ public:
      */
     bool front(T &value) {
         m_locker.lock();
-        if(m_size == 0) {
+        if (m_size == 0) {
             m_locker.unlock();
             return false;
         }
@@ -105,7 +105,7 @@ public:
      */
     bool back(T &value) {
         m_locker.lock();
-        if(m_size == 0) {
+        if (m_size == 0) {
             m_locker.unlock();
             return false;
         }
@@ -156,6 +156,42 @@ public:
         m_cond.broadcast();
         m_locker.unlock();
         return true;
+    }
+
+    /**
+     * 从队列中取出元素
+     * @param item
+     * @return success: true, fail: false
+     */
+    bool pop(T &item) {
+        m_locker.lock();
+        while (m_size <= 0) {
+            if (!m_cond.wait(m_locker.get())) {
+                m_locker.unlock();
+                return false;
+            }
+        }
+        m_front = (m_front + 1) % m_max_size;
+        item = m_array[m_front];
+        m_size--;
+        m_locker.unlock();
+        return true;
+    }
+
+    // 超时处理
+    bool pop(T &item, int ms_timeout) {
+        struct timespec t = {0, 0};
+        struct timeval now = {0, 0};
+        gettimeofday(&now, nullptr);
+        m_locker.lock();
+        if (m_size <= 0) {
+            t.tv_sec = now.tv_sec + ms_timeout / 1000;
+            t.tv_nsec = (ms_timeout % 1000) * 1000;
+            if (!m_cond.timewait(m_locker.get(), t)) {
+                m_locker.unlock();
+                return false;
+            }
+        }
     }
 
 private:

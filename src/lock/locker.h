@@ -24,7 +24,7 @@ public:
         pthread_mutex_destroy(&m_mutex);
     }
 
-    //获取互斥锁
+    //互斥锁
     bool lock() {
         return pthread_mutex_lock(&m_mutex) == 0;
     }
@@ -33,6 +33,12 @@ public:
     bool unlock() {
         return pthread_mutex_unlock(&m_mutex) == 0;
     }
+
+    //获取互斥锁
+    pthread_mutex_t *get() {
+        return &m_mutex;
+    }
+
 private:
     pthread_mutex_t m_mutex;
 };
@@ -70,6 +76,7 @@ class sem {
 private:
     sem_t m_sem;
 };
+
 //条件变量
 class cond {
 public:
@@ -91,10 +98,19 @@ public:
     }
 
     //等待条件变量
-    bool wait() {
+    bool wait(pthread_mutex_t *ptr) {
         int ret = 0;
         pthread_mutex_lock(&m_mutex);
         ret = pthread_cond_wait(&m_cond, &m_mutex);
+        pthread_mutex_unlock(&m_mutex);
+        return ret == 0;
+    }
+
+    //唤醒等待条件变量的线程
+    bool timewait(pthread_mutex_t *ptr, struct timespec t) {
+        int ret = 0;
+        pthread_mutex_lock(&m_mutex);
+        ret = pthread_cond_timedwait(&m_cond, &m_mutex, &t);
         pthread_mutex_unlock(&m_mutex);
         return ret == 0;
     }

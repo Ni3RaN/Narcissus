@@ -14,28 +14,30 @@
 
 class sql_connection_pool {
 public:
-    MYSQL* GetConnection();//获取数据库连接
+    std::shared_ptr<MYSQL> GetConnection();//获取数据库连接
 
-    bool ReleaseConnection(MYSQL* conn);//释放连接
+    bool ReleaseConnection(std::shared_ptr<MYSQL> conn);//释放连接
 
     int GetFreeConn();//获取连接
 
     void DestroyPool();//销毁所有连接
 
-    static sql_connection_pool* GetInstance();//单例模式
+    static std::shared_ptr<sql_connection_pool> GetInstance();//单例模式
 
     void init(std::string url, std::string User, std::string PassWord, std::string DataBaseName, int Port,
               int MaxConn, int close_log);//初始化数据库连接池
 
+    ~sql_connection_pool();
+
 private:
     sql_connection_pool();//构造函数
-    ~sql_connection_pool();//析构函数
+    //析构函数
 
     int m_MaxConn;//最大连接数
     int m_CurConn;//当前已使用的连接数
     int m_FreeConn;//当前空闲的连接数
     locker m_lock;//互斥锁
-    std::list<MYSQL* > connList;//连接池
+    std::list<std::shared_ptr<MYSQL> > connList;//连接池
     sem reserve;//信号量
 
 public:
@@ -50,13 +52,13 @@ public:
 class connectionRAII {
 
 public:
-    connectionRAII(MYSQL** SQL, sql_connection_pool* connPool);
+    connectionRAII(std::shared_ptr<std::shared_ptr<MYSQL> > SQL, std::shared_ptr<sql_connection_pool> connPool);
 
     ~connectionRAII();
 
 private:
-    MYSQL* conRAII;
-    sql_connection_pool* poolRAII;
+    std::shared_ptr<MYSQL> conRAII;
+    std::shared_ptr<sql_connection_pool> poolRAII;
 };
 
 #endif //NEREIDS_SQL_CONNECTION_POOL_H

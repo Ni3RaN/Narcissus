@@ -11,9 +11,9 @@ sql_connection_pool::sql_connection_pool() {
     m_FreeConn = 0;
 }
 
-sql_connection_pool* sql_connection_pool::GetInstance() {
-    static sql_connection_pool connPool;
-    return &connPool;
+std::shared_ptr<sql_connection_pool> sql_connection_pool::GetInstance() {
+    static std::shared_ptr<sql_connection_pool> connPool(new sql_connection_pool);
+    return connPool;
 }
 
 /**
@@ -36,15 +36,15 @@ void sql_connection_pool::init(std::string url, std::string User, std::string Pa
     m_close_log = close_log;
 
     for (int i = 0; i < MaxConn; i++) {
-        MYSQL* conn = nullptr;
-        conn = mysql_init(conn);
+        std::shared_ptr<MYSQL> conn(mysql_init(nullptr), mysql_close);
         if (conn == nullptr) {
             LOG_ERROR("MySQL Error");
             exit(1);
         }
-        conn = mysql_real_connect(conn, m_url.c_str(), m_User.c_str(),
+        conn = static_cast<const std::shared_ptr<MYSQL>>(mysql_real_connect(conn.get(), m_url.c_str(), m_User.c_str(),
                                                                             m_PassWord.c_str(), m_DatabaseName.c_str(),
-                                                                            m_Port, nullptr, 0);
+                                                                            m_Port, nullptr, 0));
+
         if (conn == nullptr) {
             LOG_ERROR("MySQL Error");
             exit(1);
@@ -60,8 +60,8 @@ void sql_connection_pool::init(std::string url, std::string User, std::string Pa
  * 当有请求时，从数据库连接池中返回一个可用连接，更新使用和空闲连接数
  * @return 可用连接
  */
-MYSQL* sql_connection_pool::GetConnection() {
-    MYSQL* conn = nullptr;
+std::shared_ptr<MYSQL> sql_connection_pool::GetConnection() {
+    std::shared_ptr<MYSQL> conn = nullptr;
     if (connList.empty()) {
         return conn;
     }
@@ -80,7 +80,7 @@ MYSQL* sql_connection_pool::GetConnection() {
  * @param conn 当前使用的连接
  * @return 释放成功返回true
  */
-bool sql_connection_pool::ReleaseConnection(MYSQL* conn) {
+bool sql_connection_pool::ReleaseConnection(std::shared_ptr<MYSQL> conn) {
     if (nullptr == conn) {
         return false;
     }
@@ -100,7 +100,7 @@ void sql_connection_pool::DestroyPool() {
     m_lock.lock();
     if (!connList.empty()) {
         for (auto &conn: connList) {
-            mysql_close(conn);
+            mysql_close(conn.get());
         }
         m_CurConn = 0;
         m_FreeConn = 0;
@@ -124,8 +124,9 @@ sql_connection_pool::~sql_connection_pool() {
     DestroyPool();
 }
 
-connectionRAII::connectionRAII(MYSQL** SQL, sql_connection_pool* connPool) {
-    *SQL=connPool->GetConnection();
+connectionRAII::connectionRAII(std::shared_ptr<std::shared_ptr<MYSQL>> SQL,
+                               std::shared_ptr<sql_connection_pool> connPool) {
+    *SQL = connPool->GetConnection();
     conRAII = *SQL;
     poolRAII = connPool;
 }
@@ -133,4 +134,3 @@ connectionRAII::connectionRAII(MYSQL** SQL, sql_connection_pool* connPool) {
 connectionRAII::~connectionRAII() {
     poolRAII->ReleaseConnection(conRAII);
 }
-

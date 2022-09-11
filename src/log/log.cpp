@@ -2,6 +2,7 @@
 // Created by nie on 22-9-8.
 //
 
+
 #include "log.h"
 
 Log::Log() {
@@ -95,7 +96,7 @@ void Log::write_log(int level, const char *format, ...) {
         default:
             strcpy(s, "[info]:");
             break;
-    };
+    }
     //写入一个log，行数加一
     m_mutex.lock();
     m_count++;

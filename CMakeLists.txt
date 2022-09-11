@@ -15,6 +15,8 @@ aux_source_directory(src/timer SRC_LIST)
 
 aux_source_directory(src/mysql SRC_LIST)
 
+aux_source_directory(src/threadpool SRC_LIST)
+
 add_executable(Nereids ${SRC_LIST})
 
 target_link_libraries(Nereids mysqlclient)

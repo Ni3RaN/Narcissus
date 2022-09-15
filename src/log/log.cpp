@@ -35,7 +35,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
     m_close_log =  close_log;
     m_log_buf_size = log_buf_size;
     m_buf = new char[m_log_buf_size];
-    memset(m_buf, '\0', sizeof(m_buf));
+    memset(m_buf, '\0', m_log_buf_size);
     m_split_lines = split_lines;
 
     time_t t = time(nullptr);
@@ -115,7 +115,7 @@ void Log::write_log(int level, const char *format, ...) {
             m_today = my_tm.tm_mday;
             m_count = 0;
         } else {
-            snprintf("new_log", 255, "%s%s%s.%lld", dir_name, tail, log_name, m_count / m_split_lines);
+            snprintf(new_log, 255, "%s%s%s.%lld", dir_name, tail, log_name, m_count / m_split_lines);
         }
         m_fp = fopen(new_log, "a");
     }

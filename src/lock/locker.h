@@ -7,14 +7,14 @@
 
 #include <exception>
 #include <semaphore>
+#include <pthread.h>
 
 //互斥锁
 class locker {
 public:
-
     locker() {
         //构造函数没有返回值，可以通过抛出异常来报告错误
-        if (pthread_mutex_init(&m_mutex, NULL) != 0) {
+        if (pthread_mutex_init(&m_mutex, nullptr) != 0) {
             throw std::exception();
         }
     }
@@ -40,7 +40,7 @@ public:
     }
 
 private:
-    pthread_mutex_t m_mutex;
+    pthread_mutex_t m_mutex{};
 };
 
 //信号量
@@ -53,7 +53,7 @@ public:
         }
     }
 
-    sem(int num) {
+    explicit sem(int num) {
         //构造函数没有返回值，可以通过抛出异常来报告错误
         if (sem_init(&m_sem, 0, num) != 0) {
             throw std::exception();
@@ -75,44 +75,44 @@ public:
     }
 
 private:
-    sem_t m_sem;
+    sem_t m_sem{};
 };
 
 //条件变量
 class cond {
 public:
     cond() {
-        if (pthread_mutex_init(&m_mutex, NULL) != 0) {
+//        if (pthread_mutex_init(&m_mutex, nullptr) != 0) {
+//            //构造函数没有返回值，可以通过抛出异常来报告错误
+//            throw std::exception();
+//        }
+        if (pthread_cond_init(&m_cond, nullptr) != 0) {
             //构造函数没有返回值，可以通过抛出异常来报告错误
-            throw std::exception();
-        }
-        if (pthread_cond_init(&m_cond, NULL) != 0) {
-            //构造函数没有返回值，可以通过抛出异常来报告错误
-            pthread_mutex_destroy(&m_mutex);
+//            pthread_mutex_destroy(&m_mutex);
             throw std::exception();
         }
     }
 
     ~cond() {
-        pthread_mutex_destroy(&m_mutex);
+//        pthread_mutex_destroy(&m_mutex);
         pthread_cond_destroy(&m_cond);
     }
 
     //等待条件变量
-    bool wait(pthread_mutex_t *ptr) {
+    bool wait(pthread_mutex_t *m_mutex) {
         int ret = 0;
-        pthread_mutex_lock(&m_mutex);
-        ret = pthread_cond_wait(&m_cond, &m_mutex);
-        pthread_mutex_unlock(&m_mutex);
+//        pthread_mutex_lock(&m_mutex);
+        ret = pthread_cond_wait(&m_cond, m_mutex);
+//        pthread_mutex_unlock(&m_mutex);
         return ret == 0;
     }
 
     //唤醒等待条件变量的线程
-    bool timewait(pthread_mutex_t *ptr, struct timespec t) {
+    bool timewait(pthread_mutex_t *m_mutex,struct timespec t) {
         int ret = 0;
-        pthread_mutex_lock(&m_mutex);
-        ret = pthread_cond_timedwait(&m_cond, &m_mutex, &t);
-        pthread_mutex_unlock(&m_mutex);
+//        pthread_mutex_lock(&m_mutex);
+        ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
+//        pthread_mutex_unlock(&m_mutex);
         return ret == 0;
     }
 
@@ -127,8 +127,8 @@ public:
     }
 
 private:
-    pthread_mutex_t m_mutex;
-    pthread_cond_t m_cond;
+//    pthread_mutex_t m_mutex{};
+    pthread_cond_t m_cond{};
 };
 
 #endif //NEREIDS_LOCKER_H

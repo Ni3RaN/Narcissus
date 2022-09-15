@@ -6,8 +6,9 @@
 #define NEREIDS_BLOCK_QUEUE_H
 
 #include <cstdlib>
+#include <pthread.h>
+#include <ctime>
 #include "locker.h"
-
 template<class T>
 
 /**
@@ -22,7 +23,7 @@ public:
      * 构造函数
      * @param max_size
      */
-    block_queue(int max_size = 1000) {
+    explicit block_queue(int max_size = 1000) {
         if (max_size <= 0) {
             exit(-1);
         }
@@ -117,9 +118,8 @@ public:
      * @return size
      */
     int size() {
-        int tmp = 0;
         m_locker.lock();
-        tmp = m_size;
+        int tmp = m_size;
         m_locker.unlock();
         return tmp;
     }
@@ -129,9 +129,8 @@ public:
      * @return max_size
      */
     int max_size() {
-        int tmp = 0;
         m_locker.lock();
-        tmp = m_max_size;
+        int tmp = m_max_size;
         m_locker.unlock();
         return tmp;
     }

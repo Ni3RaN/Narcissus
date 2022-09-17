@@ -6,7 +6,8 @@
 #define NEREIDS_LOCKER_H
 
 #include <exception>
-#include <semaphore>
+#include <semaphore.h>
+#include <sys/time.h>
 #include <pthread.h>
 
 //互斥锁

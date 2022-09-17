@@ -11,7 +11,7 @@ WebServer::WebServer() {
 
     char server_path[200];
     getcwd(server_path, 200);
-    char root[6] = "/root";
+    char root[6] = "/dist";
     m_root = new char[strlen(server_path) + strlen(root) + 1];
     strcpy(m_root, server_path);
     strcat(m_root, root);

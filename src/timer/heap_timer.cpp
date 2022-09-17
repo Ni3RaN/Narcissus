@@ -13,7 +13,7 @@ void heap_timer::shift_up_(size_t i) {
         if (heap_[j] < heap_[i]) {
             break;
         }
-        std::swap(heap_[j], heap_[i]);
+        SwapNode_(i, j);
         i = j;
         j = (i - 1) / 2;
     }
@@ -52,7 +52,6 @@ void heap_timer::add_timer(util_timer *timer) {
     if (ref_.count(timer->user_data)) {
         i = ref_[timer->user_data];
         heap_[i]->expire = timer->expire;
-        shift_down_(i, heap_.size());
         if (!shift_down_(i, heap_.size())) {
             shift_up_(i);
         }
@@ -69,25 +68,11 @@ void heap_timer::doWork(util_timer *timer) {
         return;
     }
     timer->cb_func(timer->user_data);
-    del_timer(timer);
+    del_(ref_[timer->user_data]);
 }
 
 void heap_timer::del_timer(util_timer *timer) {
-    assert(!heap_.empty() && timer != nullptr);
-    if (ref_.count(timer->user_data) == 0) {
-        return;
-    }
-    size_t i = ref_[timer->user_data];
-    size_t n = heap_.size() - 1;
-    assert(i <= n);
-    if (i < n) {
-        SwapNode_(i, n);
-        if (!shift_down_(i, n)) {
-            shift_up_(i);
-        }
-    }
-    heap_.pop_back();
-    ref_.erase(timer->user_data);
+    del_(ref_[timer->user_data]);
 }
 
 void heap_timer::adjust_timer(util_timer *timer) {

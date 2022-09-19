@@ -44,8 +44,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 
     const char *p = strrchr(file_name, '/');
     char log_full_name[256] = {'\0'};
-
-    if (access("/log", 0) == -1) {
+    if (access("log", 0) == -1) {
         mkdir("log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
     }
 

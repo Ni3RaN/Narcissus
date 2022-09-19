@@ -11,6 +11,8 @@
 #include <cstdarg>
 #include <pthread.h>
 #include <cstdarg>
+#include <sys/stat.h>
+#include <unistd.h>
 #include "../lock/block_queue.h"
 
 typedef long long ll;

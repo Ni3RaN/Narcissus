@@ -32,7 +32,7 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
         pthread_t tid;
         pthread_create(&tid, nullptr, flush_log_thread, nullptr);
     }
-    m_close_log =  close_log;
+    m_close_log = close_log;
     m_log_buf_size = log_buf_size;
     m_buf = new char[m_log_buf_size];
     memset(m_buf, '\0', m_log_buf_size);
@@ -44,6 +44,10 @@ bool Log::init(const char *file_name, int close_log, int log_buf_size, int split
 
     const char *p = strrchr(file_name, '/');
     char log_full_name[256] = {'\0'};
+
+    if (access("/log", 0) == -1) {
+        mkdir("log", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+    }
 
     //如果日志文件名不包含路径
     if (p == nullptr) {

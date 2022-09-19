@@ -380,6 +380,59 @@ http_conn::HTTP_CODE http_conn::process_read() {
     return NO_REQUEST;
 }
 
+static unsigned char dec_tab[256] = {
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 0,
+        0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+/**
+ * URL 解码函数
+ * @param str {const char*} 经URL编码后的字符串
+ * @return {char*} 解码后的字符串，返回值不可能为空，需要用 free 释放
+ */
+char *acl_url_decode(char *str) {
+    int len = (int) strlen(str);
+    char *tmp = (char *) malloc(len + 1);
+
+    int i = 0, pos = 0;
+    for (i = 0; i < len; i++) {
+        if (str[i] != '%')
+            tmp[pos] = str[i];
+        else if (i + 2 >= len) {  /* check boundary */
+            tmp[pos++] = '%';  /* keep it */
+            if (++i >= len)
+                break;
+            tmp[pos] = str[i];
+            break;
+        } else if (isalnum(str[i + 1]) && isalnum(str[i + 2])) {
+            tmp[pos] = (dec_tab[(unsigned char) str[i + 1]] << 4)
+                       + dec_tab[(unsigned char) str[i + 2]];
+            i += 2;
+        } else
+            tmp[pos] = str[i];
+
+        pos++;
+    }
+
+    tmp[pos] = '\0';
+    return tmp;
+}
+
+
 /**
  * 当得到一个完整、正确的HTTP请求时，我们就分析目标文件的属性。如果目标文件存在、对所有用户可读，且不是目录，则使用mmap将其映射到内存地址m_file_address处，并告诉调用者获取文件成功
  * @return 文件是否存在
@@ -408,8 +461,10 @@ http_conn::HTTP_CODE http_conn::do_request() {
                 password[j] = m_string[i];
             }
             password[j] = '\0';
+            char *n_name = acl_url_decode(name);
+            char *n_password = acl_url_decode(password);
             Json::Value json_ret;
-            if (users.find(name) != users.end() && users[name] == password) {
+            if (users.find(n_name) != users.end() && users[n_name] == n_password) {
                 json_ret["status"] = 200;
                 json_ret["sign_in"] = Json::Value("true");
                 json_ret["msg"] = "login success";
@@ -421,6 +476,8 @@ http_conn::HTTP_CODE http_conn::do_request() {
             Json::StyledWriter writer;
             std::string json_file = writer.write(json_ret);
             strcpy(m_json, json_file.c_str());
+            free(n_name);
+            free(n_password);
             return JSON_REQUEST;
         } else {
             return BAD_REQUEST;

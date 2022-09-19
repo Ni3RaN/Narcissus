@@ -24,3 +24,5 @@ add_executable(Nereids ${SRC_LIST})
 target_link_libraries(Nereids mysqlclient)
 
 target_link_libraries(Nereids pthread)
+
+target_link_libraries(Nereids jsoncpp)

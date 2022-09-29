@@ -11,25 +11,23 @@ public:
     Config();
     ~Config() = default;
 
-    void parse_arg(int argc, char*argv[]);
-
     //端口号
-    int PORT;
+    int port;
 
     //日志写入方式
-    int LOGWrite;
+    int log_write;
 
     //触发组合模式
-    int TRIGMode;
+    int trig_mode;
 
     //listenfd触发模式
-    int LISTENTrigmode;
+    int listen_trig_mode;
 
     //connfd触发模式
-    int CONNTrigmode;
+    int conn_trig_mode;
 
     //优雅关闭链接
-    int OPT_LINGER;
+    int opt_linger;
 
     //数据库连接池数量
     int sql_num;
@@ -39,6 +37,21 @@ public:
 
     //是否关闭日志
     int close_log;
+
+    //数据库端口
+    int mysql_port;
+
+    //数据库url
+    std::string mysql_url;
+
+    //数据库用户名
+    std::string mysql_username;
+
+    //数据库密码
+    std::string mysql_password;
+
+    //选择的数据库
+    std::string mysql_database;
 
 };
 

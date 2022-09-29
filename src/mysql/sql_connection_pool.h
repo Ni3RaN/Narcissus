@@ -30,8 +30,7 @@ public:
 
 private:
     sql_connection_pool();//构造函数
-    //析构函数
-    ~sql_connection_pool();
+    ~sql_connection_pool();//析构函数
     int m_MaxConn;//最大连接数
     int m_CurConn;//当前已使用的连接数
     int m_FreeConn;//当前空闲的连接数

@@ -37,7 +37,7 @@ void http_conn::initmysql_result(sql_connection_pool *connectionPool) {
     //从表中检索完整的结果集
     MYSQL_RES *result = mysql_store_result(mysql);
     //返回结果集中的列数
-    int num_fields = mysql_num_fields(result);
+    auto num_fields = mysql_num_fields(result);
 
     MYSQL_FIELD *fields = mysql_fetch_fields(result);
 
@@ -111,27 +111,27 @@ void http_conn::close_conn(bool real_close) {
  * @param sockfd
  * @param addr
  * @param root
- * @param trigmode
+ * @param trig_mode
  * @param close_log
- * @param user
- * @param passWord
- * @param sqlname
+ * @param mysql_username
+ * @param mysql_password
+ * @param mysql_database
  */
-void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int trigmode, int close_log, std::string user,
-                     std::string passWord, std::string sqlname) {
+void http_conn::init(int sockfd, const sockaddr_in &addr, char *root, int trig_mode, int close_log, std::string mysql_username,
+                     std::string mysql_password, std::string mysql_database) {
     m_sockfd = sockfd;
     m_address = addr;
 
-    addfd(m_epollfd, sockfd, true, m_TRIGMode);
+    addfd(m_epollfd, sockfd, true, m_trig_mode);
     m_user_count++;
 
     doc_root = root;
-    m_TRIGMode = trigmode;
+    m_trig_mode = trig_mode;
     m_close_log = close_log;
 
-    strcpy(sql_user, user.c_str());
-    strcpy(sql_passwd, passWord.c_str());
-    strcpy(sql_name, sqlname.c_str());
+    strcpy(sql_user, mysql_username.c_str());
+    strcpy(sql_passwd, mysql_password.c_str());
+    strcpy(sql_name, mysql_database.c_str());
 
     init();
 }
@@ -203,7 +203,7 @@ bool http_conn::read_once() {
     }
     int bytes_read = 0;
     //LT读取数据
-    if (0 == m_TRIGMode) {
+    if (0 == m_trig_mode) {
         bytes_read = recv(m_sockfd, m_read_buf + m_read_idx, READ_BUFFER_SIZE - m_read_idx, 0);
         m_read_idx += bytes_read;
         if (bytes_read <= 0) {
@@ -518,7 +518,7 @@ void http_conn::unmap() {
 bool http_conn::write() {
     int temp = 0;
     if (bytes_to_send == 0) {
-        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
         init();
         return true;
     }
@@ -526,7 +526,7 @@ bool http_conn::write() {
         temp = writev(m_sockfd, m_iv, m_iv_count);
         if (temp < 0) {
             if (errno == EAGAIN) {
-                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+                modfd(m_epollfd, m_sockfd, EPOLLOUT, m_trig_mode);
                 return true;
             }
             unmap();
@@ -544,7 +544,7 @@ bool http_conn::write() {
         }
         if (bytes_to_send <= 0) {
             unmap();
-            modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+            modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
             if (m_linger) {
                 init();
                 return true;
@@ -713,12 +713,12 @@ bool http_conn::process_write(HTTP_CODE ret) {
 void http_conn::process() {
     HTTP_CODE read_ret = process_read();
     if (read_ret == NO_REQUEST) {
-        modfd(m_epollfd, m_sockfd, EPOLLIN, m_TRIGMode);
+        modfd(m_epollfd, m_sockfd, EPOLLIN, m_trig_mode);
         return;
     }
     bool write_ret = process_write(read_ret);
     if (!write_ret) {
         close_conn();
     }
-    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_TRIGMode);
+    modfd(m_epollfd, m_sockfd, EPOLLOUT, m_trig_mode);
 }

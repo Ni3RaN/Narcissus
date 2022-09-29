@@ -79,7 +79,7 @@ void WebServer::eventListen() {
     }
 
     int ret = 0;
-    struct sockaddr_in address;
+    struct sockaddr_in address{};
     bzero(&address, sizeof(address));
     address.sin_family = AF_INET;
     address.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -95,7 +95,7 @@ void WebServer::eventListen() {
     utils.init(TIMESLOT);
 
     //epoll创建内核事件表
-//    epoll_event events[MAX_EVENT_NUMBER];
+    //epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
@@ -120,7 +120,7 @@ void WebServer::eventListen() {
 
 void WebServer::sql_pool() {
     m_connPool = sql_connection_pool::GetInstance();
-    m_connPool->init("localhost", m_user, m_passWord, m_databaseName, 3306, m_sql_num, m_close_log);
+    m_connPool->init(mysql_url, mysql_username, mysql_password, mysql_database, mysql_port, m_sql_num, m_close_log);
     users->initmysql_result(m_connPool);
 }
 
@@ -131,8 +131,8 @@ void WebServer::thread_pool() {
 
 //创建一个定时器节点，将连接信息挂载
 void WebServer::timer(int connfd, struct sockaddr_in client_address) {
-    users[connfd].init(connfd, client_address, m_root, m_connTriggermode, m_close_log, m_user, m_passWord,
-                       m_databaseName);
+    users[connfd].init(connfd, client_address, m_root, m_connTriggermode, m_close_log, mysql_username, mysql_password,
+                       mysql_database);
 
     //初始化client_data数据
     //创建定时器，设置回调函数和超时时间，绑定用户数据，将定时器添加到链表中
@@ -168,7 +168,7 @@ void WebServer::deal_timer(util_timer *timer, int sockfd) {
 
 //http 处理用户数据
 bool WebServer::dealclinetdata() {
-    struct sockaddr_in client_address;
+    struct sockaddr_in client_address{};
     socklen_t client_addrlength = sizeof(client_address);
     //LT
     if (0 == m_listenTriggermode) {
@@ -343,16 +343,19 @@ void WebServer::eventLoop() {
     }
 }
 
-void WebServer::init(int port, std::string user, std::string passWord, std::string databaseName, int log_write,
-                     int opt_linger, int trigmode, int sql_num, int thread_num, int close_log) {
+void WebServer::init(int port, int sql_port, std::string sql_url, std::string sql_username, std::string sql_password,
+                     std::string sql_database, int log_write,
+                     int opt_linger, int trig_mode, int sql_num, int thread_num, int close_log) {
 
     m_port = port;
-    m_user = std::move(user);
-    m_passWord = std::move(passWord);
-    m_databaseName = std::move(databaseName);
+    mysql_port = sql_port;
+    mysql_url = std::move(sql_url);
+    mysql_username = std::move(sql_username);
+    mysql_password = std::move(sql_password);
+    mysql_database = std::move(sql_database);
     m_log_write = log_write;
     m_opt_linger = opt_linger;
-    m_triggermode = trigmode;
+    m_triggermode = trig_mode;
     m_sql_num = sql_num;
     m_thread_num = thread_num;
     m_close_log = close_log;

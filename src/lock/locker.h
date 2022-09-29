@@ -83,37 +83,31 @@ private:
 class cond {
 public:
     cond() {
-//        if (pthread_mutex_init(&m_mutex, nullptr) != 0) {
-//            //构造函数没有返回值，可以通过抛出异常来报告错误
-//            throw std::exception();
-//        }
         if (pthread_cond_init(&m_cond, nullptr) != 0) {
             //构造函数没有返回值，可以通过抛出异常来报告错误
-//            pthread_mutex_destroy(&m_mutex);
             throw std::exception();
         }
     }
 
     ~cond() {
-//        pthread_mutex_destroy(&m_mutex);
         pthread_cond_destroy(&m_cond);
     }
 
     //等待条件变量
     bool wait(pthread_mutex_t *m_mutex) {
         int ret = 0;
-//        pthread_mutex_lock(&m_mutex);
+        pthread_mutex_lock(m_mutex);
         ret = pthread_cond_wait(&m_cond, m_mutex);
-//        pthread_mutex_unlock(&m_mutex);
+        pthread_mutex_unlock(m_mutex);
         return ret == 0;
     }
 
     //唤醒等待条件变量的线程
     bool timewait(pthread_mutex_t *m_mutex,struct timespec t) {
         int ret = 0;
-//        pthread_mutex_lock(&m_mutex);
+        pthread_mutex_lock(m_mutex);
         ret = pthread_cond_timedwait(&m_cond, m_mutex, &t);
-//        pthread_mutex_unlock(&m_mutex);
+        pthread_mutex_unlock(m_mutex);
         return ret == 0;
     }
 
@@ -128,7 +122,6 @@ public:
     }
 
 private:
-//    pthread_mutex_t m_mutex{};
     pthread_cond_t m_cond{};
 };
 

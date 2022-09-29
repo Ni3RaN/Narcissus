@@ -73,12 +73,12 @@ public:
 public:
     http_conn() {}
 
-    ~http_conn() {}
+    ~http_conn() = default;
 
 public:
     //初始化新接受的连接
-    void init(int sockfd, const sockaddr_in &addr, char *root, int trigmode, int close_log, std::string user,
-              std::string passWord, std::string sqlname);
+    void init(int sockfd, const sockaddr_in &addr, char *root, int trig_mode, int close_log, std::string user,
+              std::string password, std::string sql_name);
 
     //关闭连接
     void close_conn(bool real_close = true);
@@ -165,7 +165,7 @@ private:
     char m_read_buf[READ_BUFFER_SIZE];
     //标识读缓冲中已经读入的客户数据的最后一个字节的下一个位置
     int m_read_idx;
-    //当前正在分析的字符在读缓冲区中的位置
+    //当前正在分析的字符在读缓冲区中的位置m_pool
     int m_checked_idx;
     //当前正在解析的行的起始位置
     int m_start_line;
@@ -200,7 +200,7 @@ private:
     char *doc_root;
 
     std::map<std::string, std::string> m_users;//用户名密码匹配表
-    int m_TRIGMode;//触发模式
+    int m_trig_mode;//触发模式
     int m_close_log;//是否开启日志
 
     char sql_user[100];

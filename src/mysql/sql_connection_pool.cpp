@@ -3,13 +3,9 @@
 //
 
 #include <mysql/mysql.h>
-#include <cstdio>
 #include <string>
-#include <cstring>
 #include <cstdlib>
 #include <list>
-#include <pthread.h>
-#include <iostream>
 #include "sql_connection_pool.h"
 #include "../log/log.h"
 

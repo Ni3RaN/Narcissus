@@ -1,24 +1,22 @@
 #include "config.h"
 
 int main(int argc, char *argv[]) {
-    std::string user = "test";
-    std::string passwd = "test";
-    std::string databasename = "test";
 
     Config config;
 
-    config.parse_arg(argc,argv);
-
     WebServer webServer;
 
-    webServer.init(config.PORT, user, passwd, databasename, config.LOGWrite,
-                        config.OPT_LINGER, config.TRIGMode,  config.sql_num,  config.thread_num,
-                        config.close_log);
+    webServer.init(config.port, config.mysql_port, config.mysql_url, config.mysql_username, config.mysql_password,
+                   config.mysql_database,
+                   config.log_write,
+                   config.opt_linger, config.trig_mode, config.sql_num, config.thread_num,
+                   config.close_log);
 
 
     webServer.log_write();
 
-    printf("Server port: %d\n", config.PORT);
+    printf("Server port: %d\n", config.port);
+
     webServer.sql_pool();
     webServer.thread_pool();
     webServer.trig_mode();

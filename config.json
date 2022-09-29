@@ -1,0 +1,20 @@
+{
+  "config": {
+    "port": 9000,
+    "log_write": 0,
+    "trig_mode": 0,
+    "listen_trig_mode": 0,
+    "conn_trig_mode": 0,
+    "opt_linger": 0,
+    "sql_num": 8,
+    "thread_num": 8,
+    "close_log": 0,
+    "mysql": {
+      "url": "localhost",
+      "port": 3306,
+      "username": "test",
+      "password": "test",
+      "database": "test"
+    }
+  }
+}

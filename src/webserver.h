@@ -28,22 +28,34 @@ public:
 
     ~WebServer();
 
-    void init(int port, std::string user, std::string passWord, std::string databaseName,
-              int log_write, int opt_linger, int trigmode, int sql_num,
-              int thread_num, int close_log);
+    void init(int port, int sql_port, std::string sql_url, std::string sql_username, std::string sql_password,
+              std::string sql_database, int log_write,
+              int opt_linger, int trig_mode, int sql_num, int thread_num, int close_log);
 
     void thread_pool();
+
     void sql_pool();
+
     void log_write();
+
     void trig_mode();
+
     void eventListen();
+
     void eventLoop();
+
     void timer(int connfd, struct sockaddr_in client_address);
+
     void adjust_timer(util_timer *timer);
+
     void deal_timer(util_timer *timer, int sockfd);
+
     bool dealclinetdata();
+
     bool dealwithsignal(bool &timeout, bool &stop_server);
+
     void dealwithread(int sockfd);
+
     void dealwithwrite(int sockfd);
 
 
@@ -59,10 +71,12 @@ public:
 
     //数据库
     int m_sql_num{}; //数据库连接池数量
-    sql_connection_pool *m_connPool{};//数据库连接池
-    std::string m_user; //数据库用户名
-    std::string m_passWord; //数据库密码
-    std::string m_databaseName; //数据库名
+    sql_connection_pool *m_connPool{}; //数据库连接池
+    std::string mysql_url; //数据库url
+    int mysql_port; //数据库端口
+    std::string mysql_username; //数据库用户名
+    std::string mysql_password; //数据库密码
+    std::string mysql_database; //数据库名
 
     threadpool<http_conn> *m_pool{};//线程池
     int m_thread_num{};//线程池数量

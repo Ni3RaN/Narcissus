@@ -1,14 +1,14 @@
 {
   "config": {
     "port": 9000,
-    "log_write": 0,
-    "trig_mode": 0,
-    "listen_trig_mode": 0,
-    "conn_trig_mode": 0,
-    "opt_linger": 0,
+    "log_write": false,
+    "trig_mode": false,
+    "listen_trig_mode": false,
+    "conn_trig_mode": false,
+    "opt_linger": false,
     "sql_num": 8,
     "thread_num": 8,
-    "close_log": 0,
+    "close_log": false,
     "mysql": {
       "url": "localhost",
       "port": 3306,

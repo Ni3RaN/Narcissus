@@ -13,6 +13,10 @@ aux_source_directory(src/log SRC_LIST)
 
 aux_source_directory(src/timer SRC_LIST)
 
+aux_source_directory(src/timer/set SRC_LIST) #set timer
+
+aux_source_directory(src/timer/heap SRC_LIST) #heap timer
+
 aux_source_directory(src/mysql SRC_LIST)
 
 aux_source_directory(src/threadpool SRC_LIST)

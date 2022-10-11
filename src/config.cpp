@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iostream>
 #include "config.h"
 
 Config::Config(){
@@ -60,5 +61,8 @@ Config::Config(){
 
     //选择的数据库
     mysql_database = json["config"]["mysql"]["database"].asString();
+
+    //定时器模式,0 heap, 1 set
+    timer_mode = json["config"]["heap_mode"].asInt();
 
 }

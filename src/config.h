@@ -41,6 +41,8 @@ public:
     //数据库端口
     int mysql_port;
 
+    int timer_mode;
+
     //数据库url
     std::string mysql_url;
 

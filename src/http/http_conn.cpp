@@ -5,6 +5,7 @@
 #include "http_conn.h"
 
 #include <mysql/mysql.h>
+#include <iostream>
 
 
 //定义http响应的一些状态信息
@@ -99,7 +100,7 @@ void modfd(int epollfd, int fd, int ev, int TRIGMode) {
  */
 void http_conn::close_conn(bool real_close) {
     if (real_close && (m_sockfd != -1)) {
-        LOG_INFO("close %d", m_sockfd);
+        LOG_INFO("close %d user_count %d", m_sockfd,m_user_count);
         removefd(m_epollfd, m_sockfd);
         m_sockfd = -1;
         m_user_count--;

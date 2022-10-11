@@ -4,6 +4,7 @@
 
 #include <arpa/inet.h>
 #include "webserver.h"
+#include "timer/Utils.h"
 
 
 WebServer::WebServer() {
@@ -94,8 +95,6 @@ void WebServer::eventListen() {
 
     utils.init(TIMESLOT);
 
-    //epoll创建内核事件表
-    //epoll_event events[MAX_EVENT_NUMBER];
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
 
@@ -141,19 +140,27 @@ void WebServer::timer(int connfd, struct sockaddr_in client_address) {
     auto *timer = new util_timer;
     timer->user_data = &users_timer[connfd];
     timer->cb_func = cb_func;
-    time_t cur = time(nullptr);
+    auto cur = Clock::now();
     //TIMESLOT:最小时间间隔单位为5s
-    timer->expire = cur + 3 * TIMESLOT;
+    timer->expire = cur + MS(3 * TIMESLOT);
     users_timer[connfd].timer = timer;
-    utils.timer_heap.add_timer(timer);
+    if (m_timer_mode == 0) {
+        utils.timer_heap.add_timer(timer);
+    } else if (m_timer_mode == 1) {
+        utils.timer_set.add_timer(timer);
+    }
 }
 
 //若数据活跃，则将定时器节点往后延迟3个时间单位
 //并对新的定时器在链表上的位置进行调整
 void WebServer::adjust_timer(util_timer *timer) {
-    time_t cur = time(nullptr);
-    timer->expire = cur + 3 * TIMESLOT;
-    utils.timer_heap.adjust_timer(timer);
+    if (m_timer_mode == 0) {
+        auto cur = Clock::now();
+        timer->expire = cur + MS(3 * TIMESLOT);
+        utils.timer_heap.adjust_timer(timer);
+    } else if (m_timer_mode == 1) {
+        utils.timer_set.adjust_timer(timer);
+    }
     LOG_INFO("%s", "adjust timer once");
 }
 
@@ -161,7 +168,11 @@ void WebServer::adjust_timer(util_timer *timer) {
 void WebServer::deal_timer(util_timer *timer, int sockfd) {
     timer->cb_func(&users_timer[sockfd]);
     if (timer) {
-        utils.timer_heap.del_timer(timer);
+        if (m_timer_mode == 0) {
+            utils.timer_heap.del_timer(timer);
+        } else if (m_timer_mode == 1) {
+            utils.timer_set.del_timer(timer);
+        }
     }
     LOG_INFO("close fd %d", users_timer[sockfd].sockfd);
 }
@@ -307,8 +318,10 @@ void WebServer::eventLoop() {
             //处理新到的客户连接
             if (sockfd == m_listenfd) {
                 bool flag = dealclinetdata();
-                if (!flag)
+                if (!flag) {
+                    LOG_ERROR("%s", "dealclinetdata error");
                     continue;
+                }
             }
                 //处理异常事件
             else if (events[i].events & (EPOLLRDHUP | EPOLLHUP | EPOLLERR)) {
@@ -320,8 +333,9 @@ void WebServer::eventLoop() {
             else if ((sockfd == m_pipefd[0]) && (events[i].events & EPOLLIN)) {
                 //接收到SIGALRM信号，timeout设置为True
                 bool flag = dealwithsignal(timeout, stop_server);
-                if (false == flag)
+                if (false == flag) {
                     LOG_ERROR("%s", "dealclientdata failure");
+                }
             }
                 //处理客户连接上接收到的数据
             else if (events[i].events & EPOLLIN) {
@@ -345,7 +359,7 @@ void WebServer::eventLoop() {
 
 void WebServer::init(int port, int sql_port, std::string sql_url, std::string sql_username, std::string sql_password,
                      std::string sql_database, int log_write,
-                     int opt_linger, int trig_mode, int sql_num, int thread_num, int close_log) {
+                     int opt_linger, int trig_mode, int sql_num, int thread_num, int close_log, int timer_mode) {
 
     m_port = port;
     mysql_port = sql_port;
@@ -359,4 +373,5 @@ void WebServer::init(int port, int sql_port, std::string sql_url, std::string sq
     m_sql_num = sql_num;
     m_thread_num = thread_num;
     m_close_log = close_log;
+    m_timer_mode = timer_mode;
 }

@@ -15,6 +15,7 @@
       "username": "test",
       "password": "test",
       "database": "test"
-    }
+    },
+    "timer_mode": 0
   }
 }

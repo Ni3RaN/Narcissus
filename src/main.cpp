@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
                    config.mysql_database,
                    config.log_write,
                    config.opt_linger, config.trig_mode, config.sql_num, config.thread_num,
-                   config.close_log);
+                   config.close_log, config.timer_mode);
 
 
     webServer.log_write();

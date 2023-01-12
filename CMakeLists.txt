@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.21)
-project(Nereids)
+project(Narcissus)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -23,10 +23,10 @@ aux_source_directory(src/threadpool SRC_LIST)
 
 aux_source_directory(src/http SRC_LIST)
 
-add_executable(Nereids ${SRC_LIST})
+add_executable(Narcissus ${SRC_LIST})
 
-target_link_libraries(Nereids mysqlclient)
+target_link_libraries(Narcissus mysqlclient)
 
-target_link_libraries(Nereids pthread)
+target_link_libraries(Narcissus pthread)
 
-target_link_libraries(Nereids jsoncpp)
+target_link_libraries(Narcissus jsoncpp)

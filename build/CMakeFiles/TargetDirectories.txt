@@ -1,3 +1,0 @@
-/Users/nieran/workspace/Cpp/Narcissus/build/CMakeFiles/Narcissus.dir
-/Users/nieran/workspace/Cpp/Narcissus/build/CMakeFiles/edit_cache.dir
-/Users/nieran/workspace/Cpp/Narcissus/build/CMakeFiles/rebuild_cache.dir

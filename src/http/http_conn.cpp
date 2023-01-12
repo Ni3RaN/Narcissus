@@ -280,8 +280,9 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char *text) {
     if (!m_url || m_url[0] != '/') {
         return BAD_REQUEST;
     }
+    //当url为'/'时，显示主页
     if (strlen(m_url) == 1) {
-        return BAD_REQUEST;
+        strcat(m_url,"index.html");
     }
     m_check_state = CHECK_STATE_HEADER;
     return NO_REQUEST;
@@ -484,23 +485,28 @@ http_conn::HTTP_CODE http_conn::do_request() {
             return BAD_REQUEST;
         }
     }
-        //get请求
-    else {
-        return BAD_REQUEST;
-    }
-//    if (stat(m_real_file, &m_file_stat) < 0)
-//        return NO_RESOURCE;
-//
-//    if (!(m_file_stat.st_mode & S_IROTH))
-//        return FORBIDDEN_REQUEST;
-//
-//    if (S_ISDIR(m_file_stat.st_mode))
-//        return BAD_REQUEST;
-//
-//    int fd = open(m_real_file, O_RDONLY);
-//    m_file_address = (char *) mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
-//    close(fd);
-//    return FILE_REQUEST;
+    //get请求
+     else {
+        strncpy(m_real_file+len, m_url,FILENAME_LEN-len-1);
+        int tmp_len = strlen(m_real_file);
+        //如果请求结尾是'/'，添加index.html
+        if(m_real_file[tmp_len-1]=='/') {
+            strncpy(m_real_file+tmp_len, "index.html", FILENAME_LEN-tmp_len-1);
+        }
+     }
+     if (stat(m_real_file, &m_file_stat) < 0)
+         return NO_RESOURCE;
+     if (!(m_file_stat.st_mode & S_IROTH))
+        return FORBIDDEN_REQUEST;
+
+
+     if (S_ISDIR(m_file_stat.st_mode))
+         return BAD_REQUEST;
+
+     int fd = open(m_real_file, O_RDONLY);
+     m_file_address = (char *) mmap(0, m_file_stat.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+     close(fd);
+     return FILE_REQUEST;
 }
 
 /**

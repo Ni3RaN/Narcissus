@@ -1,5 +1,17 @@
 # Narcissus
 
+一个Linux下C++高性能Web服务器项目
+
+- 使用 线程池 + 非阻塞socket + epoll(ET和LT均实现) + 事件处理(Reactor和模拟Proactor均实现) 的并发模型
+- 使用状态机解析HTTP请求报文，支持解析GET和POST请求
+- 实现同步/异步日志系统，记录服务器运行状态
+- 经Webbench压力测试可以实现上万的并发连接数据交换
+- 使用多种数据结构实现定时器，支持定时关闭非活动连接
+- 功能类似于Nginx的静态资源访问
+
+
+# Narcissus
+
 ## 项目结构
 
 ```
@@ -80,7 +92,7 @@ CREATE TABLE user(
 INSERT INTO user(username, passwd) VALUES('name', 'passwd');
 ```
 
-- 修改配置文件config.json
+- 修改配置文件config.json，修改相关配置
 
 ```json
 {
@@ -106,8 +118,6 @@ INSERT INTO user(username, passwd) VALUES('name', 'passwd');
 }
 ```
 
-修改数据库相关配置
-
 ### 编译
 
 ```bash
@@ -124,6 +134,11 @@ cd ./build
 ## 使用
 
 在build文件夹下创建root文件夹，将静态资源放入root文件夹下，即可通过浏览器访问localhost:9000
+
+
+
+
+
 
 
 
